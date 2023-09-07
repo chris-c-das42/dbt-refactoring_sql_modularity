@@ -1,0 +1,23 @@
+dbt run
+    - run a specific model: dbt run -m dim_customers (where dim_customers is the name of the model)
+    - run a specific model, option 2: dbt run --select dim_customers
+
+dbt test
+    - run the sql against tables or views as necessary and tell us the results of the test
+
+dbt docs generate
+    - goes through full project, builds documentation site
+
+dbt build
+    - runs dbt run && dbt test
+
+
+#### notes brought in from refactoring course:
+dbt deps - installs packages listed in the packages.yml file and their dependencies
+dbt run - runs the whole project
+dbt test - runs the tests in the tests folder
+dbt compile - compiles the models, analyses, and tests code in the Target folder
+dbt run -m <model_name> - runs a specific model
+
+dbt docs generate - generates documentation files (manifest.json and catalog.json )
+dbt docs serve - serves the generated documentation files
