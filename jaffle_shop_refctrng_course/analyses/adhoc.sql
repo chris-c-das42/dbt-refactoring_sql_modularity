@@ -14,5 +14,8 @@ dbt test - runs the tests in the tests folder
 dbt compile - compiles the models, analyses, and tests code in the Target folder
 dbt run -m <model_name> - runs a specific model
 
+dbt docs generate - generates documentation files (manifest.json and catalog.json )
+dbt docs serve - serves the generated documentation files
+
 
  */
