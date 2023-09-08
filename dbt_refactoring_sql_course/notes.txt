@@ -1,0 +1,64 @@
+#### Fundamentals course
+dbt run
+    - run a specific model: dbt run -m dim_customers (where dim_customers is the name of the model)
+    - run a specific model, option 2: dbt run --select dim_customers
+
+dbt test
+    - run the sql against tables or views as necessary and tell us the results of the test
+
+dbt build
+    - runs dbt run && dbt test ... ish
+    - performs dbt run on the first "layer" of models in DAG order, then performs dbt test on that first "layer"; performs dbt run on the second "layer", tests second layer, etc.
+    - pro: if perform "dbt run" and then "dbt test", and a test fails upstream, you will have just built the data based on a model dependent on failing data!
+
+dbt docs generate
+    - goes through full project, builds documentation site
+
+dbt docs serve
+
+dbt source freshness
+    - as long as you have the freshness: block in your source <source_name>.yml file you can run dbt source freshness command and warn or error if we have not seen new data
+
+# testing
+    - singular vs generic tests
+    - singular test
+        - write a custom sql test file in the tests folder
+    - generic tests
+        - come in four flavors: unique, not_null, accepted_values, relationships
+        - can be run by declaring them in a yml file eg stg_jaffle_shop.yml
+    - you can test sources as well (not just models)
+
+# documentation
+- documentation can be written directly into the yml files where we declared the tests for our models using the description: line
+- alternatively, you can use doc blocks that are a separate markdown file
+    - in that description: line you'll reference the name of the doc block, not the name of the markdown file the doc block lives in (this enables multiple dock blocks in one md file)
+- this all works with sources, too
+
+
+
+#### Refactoring course
+# refactoring process:
+step 1: Migrating legacy code 1:1
+step 2: translating hard coded table references
+step 3: choosing a refactoring strategy
+    option 1: overwriting that legacy file we copied over, editing the sql in the file we copied over
+    option 2: merge in one small slice at a time from the legacy file (the route she chooses) into new model files as necessary
+step 4: CTE groupings and cosmetic cleanups
+    - import CTEs
+    - logical CTEs (ie subqueries)
+    - final CTEs
+    - simple select statement
+step 5: centralizing transformations & splitting up models
+    staging models
+    CTEs or intermediate models
+    final model
+step 6: auditing
+
+dbt deps - installs packages listed in the packages.yml file and their dependencies
+dbt run - runs the whole project
+dbt test - runs the tests in the tests folder
+dbt compile - compiles the models, analyses, and tests code in the Target folder
+dbt run -m <model_name> - runs a specific model
+
+dbt docs generate - generates documentation files (manifest.json and catalog.json )
+dbt docs serve - serves the generated documentation files
