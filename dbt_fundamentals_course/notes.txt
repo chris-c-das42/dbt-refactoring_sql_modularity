@@ -1,3 +1,4 @@
+#### Fundamentals course
 dbt run
     - run a specific model: dbt run -m dim_customers (where dim_customers is the name of the model)
     - run a specific model, option 2: dbt run --select dim_customers
@@ -5,11 +6,34 @@ dbt run
 dbt test
     - run the sql against tables or views as necessary and tell us the results of the test
 
+dbt build
+    - runs dbt run && dbt test ... ish
+    - performs dbt run on the first "layer" of models in DAG order, then performs dbt test on that first "layer"; performs dbt run on the second "layer", tests second layer, etc.
+    - pro: if perform "dbt run" and then "dbt test", and a test fails upstream, you will have just built the data based on a model dependent on failing data!
+
 dbt docs generate
     - goes through full project, builds documentation site
 
-dbt build
-    - runs dbt run && dbt test
+dbt docs serve
+
+dbt source freshness
+    - as long as you have the freshness: block in your source <source_name>.yml file you can run dbt source freshness command and warn or error if we have not seen new data
+
+# testing
+    - singular vs generic tests
+    - singular test
+        - write a custom sql test file in the tests folder
+    - generic tests
+        - come in four flavors: unique, not_null, accepted_values, relationships
+        - can be run by declaring them in a yml file eg stg_jaffle_shop.yml
+    - you can test sources as well (not just models)
+
+# documentation
+- documentation can be written directly into the yml files where we declared the tests for our models using the description: line
+- alternatively, you can use doc blocks that are a separate markdown file
+    - in that description: line you'll reference the name of the doc block, not the name of the markdown file the doc block lives in (this enables multiple dock blocks in one md file)
+- this all works with sources, too
+
 
 
 #### notes brought in from refactoring course:
