@@ -1,0 +1,174 @@
+####################################################################################################################
+#### Fundamentals course
+dbt run
+    - run a specific model: dbt run -m dim_customers (where dim_customers is the name of the model)
+    - run a specific model, option 2: dbt run --select dim_customers
+
+dbt test
+    - run the sql against tables or views as necessary and tell us the results of the test
+
+dbt build
+    - runs dbt run && dbt test ... ish
+    - performs dbt run on the first "layer" of models in DAG order, then performs dbt test on that first "layer"; performs dbt run on the second "layer", tests second layer, etc.
+    - pro: if perform "dbt run" and then "dbt test", and a test fails upstream, you will have just built the data based on a model dependent on failing data!
+
+dbt docs generate
+    - goes through full project, builds documentation site
+
+dbt docs serve
+
+dbt source freshness
+    - as long as you have the freshness: block in your source <source_name>.yml file you can run dbt source freshness command and warn or error if we have not seen new data
+
+# testing
+    - singular vs generic tests
+    - singular test
+        - write a custom sql test file in the tests folder
+    - generic tests
+        - come in four flavors: unique, not_null, accepted_values, relationships
+        - can be run by declaring them in a yml file eg stg_jaffle_shop.yml
+    - you can test sources as well (not just models)
+
+# documentation
+- documentation can be written directly into the yml files where we declared the tests for our models using the description: line
+- alternatively, you can use doc blocks that are a separate markdown file
+    - in that description: line you'll reference the name of the doc block, not the name of the markdown file the doc block lives in (this enables multiple dock blocks in one md file)
+- this all works with sources, too
+
+
+
+####################################################################################################################
+#### Refactoring course
+# refactoring process:
+step 1: Migrating legacy code 1:1
+step 2: translating hard coded table references
+step 3: choosing a refactoring strategy
+    option 1: overwriting that legacy file we copied over, editing the sql in the file we copied over
+    option 2: merge in one small slice at a time from the legacy file (the route she chooses) into new model files as necessary
+step 4: CTE groupings and cosmetic cleanups
+    - import CTEs
+    - logical CTEs (ie subqueries)
+    - final CTEs
+    - simple select statement
+step 5: centralizing transformations & splitting up models
+    staging models
+    CTEs or intermediate models
+    final model
+step 6: auditing
+
+dbt deps - installs packages listed in the packages.yml file and their dependencies
+dbt run - runs the whole project
+dbt test - runs the tests in the tests folder
+dbt compile - compiles the models, analyses, and tests code in the Target folder
+dbt run -m <model_name> - runs a specific model
+
+dbt docs generate - generates documentation files (manifest.json and catalog.json )
+dbt docs serve - serves the generated documentation files
+
+
+
+####################################################################################################################
+#### Jinja, Macros, Packages course
+# JINJA
+## single vs double curly braces
+
+### single-curly ie {} is using jinja templating
+### double-curly is telling jinja to print something out
+Example:
+{% for i in range(5) %} < p > {{ i }} < / p > {% endfor %}
+This will print out 0, 1, 2, 3, 4
+## setting variables in Jinja
+Example:
+{% set name = "Tim" %}
+-- This will set the variable name to Tim
+{{ name }}
+-- This will print out Tim
+
+
+## numbers
+-- Example:
+{% set age = 20 %}
+
+
+## lists
+-- Example:
+{% for name in names %}
+{% set names = ["Tim", "Joe", "Sam"] %}
+    of all names,
+-- This will set the variable names to a list of Tim, Joe, and Sam
+    my favorite is {{ name }}
+    {% endfor %}
+    -- This will print out Of all names, my favorite is ...
+    
+
+## more practice with Jinja
+{% set current_temperature = 45 %}
+{% if current_temperature < 65 %}
+    Time for a cappuccino
+{% else %}
+    Time for iced coffee
+{% endif %}
+
+
+## To remove the whitespace, use the minus sign
+{% for i in range(5) -%}
+    {{ i }}
+{%- endfor %}
+
+
+## Dictionaries
+Example:
+{% set person = {"name": "Tim", "age": 45} %}
+This will set the variable person to a dictionary with the keys name and age
+{{ person["name"] }}
+This will print out Tim
+{{ person["age"] }}
+This will print out 45
+
+
+
+# MACROS
+- Macros are re-usable throughout the project (define them in the macros folder)
+- Macros are a feature of Jinja, not unique to dbt
+-   Recall: Jinja is a templatized language that runs Python in the background
+- Think about DRY (dont repeat yourself) code vs Readability.  Be somewhere in the middle of those two opposing ideas
+- to run a macro standalone (straight from the command line):
+dbt run-operation <name_of_macro>
+eg:
+dbt run-operation grant_select
+- to pass info back to the terminal or output in general use the log() function as outlined in grant_select.sql file
+
+
+# PACKAGES
+- Import models and macros that have already been written. Leverage modeling of common sources.
+- Packages live in the packages.yml file
+- to install packages in the yml file run dbt deps
+- three options
+-   the way the package is called on hub.getdbt.com
+-   you can install packages from a private repository by connect directly to git in the packages.yml file!
+-   you can install packages from a local file
+- packages contain much more than just models
+-   Seeds, analyses, etc
+
+# Random useful functions
+- run_query() is a wrapper that takes statements and runs them in the respective DWH
+- log() log a line of text to the logs in dbt.
+- target() contains information about your connection to the warehouse.
+
+
+####################################################################################################################
+#### Analyses and Seeds course
+# Analyses
+- sql files in the analyses folder which support Jinja and can be compiled. 
+- Will NOT be run with dbt run, but will be compiled with the models etc by running
+dbt compile
+- They're not tests or models.
+
+# Seeds
+- csv files that live in the data folder
+- build a table from small amounts of data in CSVs by running:
+dbt seed
+- models can use the ref() function to reference seeds
+- you can test the seed same way we would test models 
+-   see the seeds/schema.yml file for example configuration
+-   and then run dbt test --models employees  
