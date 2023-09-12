@@ -34,5 +34,3 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   jinja_macros_packages_course:
     # Config indicated by + and applies to all files under models/example/
-    example:
-      +materialized: view
