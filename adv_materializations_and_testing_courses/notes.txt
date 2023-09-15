@@ -177,3 +177,40 @@ dbt seed
 
 ####################################################################################################################
 #### Advanced Materializations
+# Five materializations overview
+- ways dbt builds the models we write
+- materializations can be configured in the project.yml file or at the top of the model.sql file in the {{ config() }} block
+1. tables - the data itself is saved as a table. 
+    The table exists in the DB.
+2. views - the query that builds the table is saved in the database and when you run select * from some_view the query is re-run. 
+    The view exists in the DB, but not as data rather it exists as a query.
+3. ephemeral - the query is not saved in the database, it imports the select statement as a CTE.  
+    The ephemeral model does NOT exist in the DB, its a reusable code snippet.  Ie cannot select * from the ephemeral model.
+4. incremental - looks at the underlying data and asks "which of these are new?" and adds the new ones into the destination table
+    think of incremental models as an upgrade path
+        Ie start with views. When the views are too long to query, switch to tables (longer to build, shorter to query)
+        When tables take too long to build, switch to incremental models
+    what we're doing ...
+        - tell dbt to add new rows instead of recreating the table (materialized = 'incremental' does this)
+        - How do we ID the new rows?  we apply a where clause on new runs that specifies only data that has arrived since the last time we updated this table
+    steps dbt follows:
+        1. build a temporary table with the new rows (where filter)
+        2. insert those new rows into the existing table, replacing existing rows
+        3. drop the temp table
+    tell incremental model to replace existing rows with "unique_key = ..."
+    incremental models ...:
+        - are approximately correct (but not completely, mainly bc late arriving data)
+        - introduce complexity
+        - folks try to incorporate logic to increase the accuracy of what is built, but then that slows down and negates the benefits of incremental (performance)
+5. snapshots - look at underlying data and look for whats changed.  If something as changed its brought in as a NEW ROW. Think SCDs.
+    - live in a folder called snapshots; sql files just like models
+    - capture Type 2 SCDs
+    - they are run separately from models, seeds, etc.  Ie run by running: dbt snapshot
+    - adds four columns: 
+        - a new unique identifier
+        - updated_at
+        - valid_from
+        - valid_to
+    - this is NOT a full copy of the table every day, we're recording timestamps for periods of validity
+    - use the timestamp strategy where possible, but sometimes its too sensitive (what if we only care about one column? we can use check_cols='')
+    
